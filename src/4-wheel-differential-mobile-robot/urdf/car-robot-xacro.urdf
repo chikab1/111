@@ -1,0 +1,1534 @@
+<?xml version="1.0"?>
+<!-- 
+  机器人URDF模型定义文件
+  文件名: two_layer_car.urdf
+  用途: 定义双层小车的物理结构、外观和Gazebo仿真属性
+  格式: XML格式，遵循URDF (Unified Robot Description Format)标准
+-->
+
+<robot name="two_layer_car">
+  <!-- 
+    robot标签是所有URDF模型的根标签
+    name属性: 机器人名称，用于ROS话题和参数命名空间
+  -->
+
+  <!-- ==================== 基础连杆定义 ==================== -->
+  <!-- 
+    base_link 作为机器人坐标系的参考点，通常是地图坐标系的原点
+    其他所有组件都直接或间接连接到此连杆
+  -->
+  <link name="base_link">
+    <!-- 
+      该连杆未定义视觉、碰撞和惯性属性
+      通常用于定义机器人的全局参考坐标系
+      实际物理结构通过其他连杆实现
+    -->
+  </link>
+
+  <!-- ==================== 第一层底盘 (下层结构) ==================== -->
+  <!-- 
+    功能: 承载电池、树莓派、变压器等主要电子设备和支撑结构
+    尺寸: 200mm × 143mm × 7.8mm
+  -->
+  <link name="chassis_link_1">
+    <visual>
+      <!-- 
+        origin标签: 定义几何体的位姿（位置和方向）
+        rpy属性: 旋转角度（弧度），格式为"roll pitch yaw"
+          - roll: 绕X轴旋转
+          - pitch: 绕Y轴旋转  
+          - yaw: 绕Z轴旋转
+          - 此处"0 0 0"表示无旋转
+        xyz属性: 位置偏移（米），格式为"x y z"
+          - x: 前后方向（前为正）
+          - y: 左右方向（右为正）
+          - z: 上下方向（上为正）
+          - 此处"0 0 0"表示位于连杆坐标系原点
+      -->
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      
+      <!-- 
+        geometry标签: 定义几何形状
+        支持的形状: box(长方体), cylinder(圆柱体), sphere(球体), mesh(网格模型)
+      -->
+      <geometry>
+        <!-- 
+          box标签: 长方体
+          size属性: 尺寸（米），格式为"长度 宽度 高度"
+            - 长度: X轴方向尺寸
+            - 宽度: Y轴方向尺寸  
+            - 高度: Z轴方向尺寸
+        -->
+        <box size="0.20 0.143 0.0078"/>
+      </geometry>
+      
+      <!-- 
+        material标签: 定义视觉材质
+        name属性: 材质名称，可被其他连杆引用
+      -->
+      <material name="gray">
+        <!-- 
+          color标签: 定义颜色
+          rgba属性: 颜色和透明度，格式为"红 绿 蓝 透明度"
+            - 取值范围: 0.0 ~ 1.0
+            - 透明度: 1.0为完全不透明，0.0为完全透明
+        -->
+        <color rgba="0.7 0.7 0.7 1"/>
+      </material>
+    </visual>
+    
+    <!-- 
+      collision标签: 定义碰撞检测的几何形状
+      通常与visual形状相同，但可以简化以提高仿真性能
+    -->
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.20 0.143 0.0078"/>
+      </geometry>
+    </collision>
+    
+    <!-- 
+      inertial标签: 定义惯性属性（质量、转动惯量）
+      影响物理仿真中的动力学行为
+    -->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <!-- 
+        mass标签: 质量（千克）
+        value属性: 质量数值
+      -->
+      <mass value="2.45"/>
+      <!-- 
+        inertia标签: 转动惯量矩阵（kg·m²）
+        ixx, ixy, ixz, iyy, iyz, izz: 惯量矩阵的各个分量
+        - ixx: 绕X轴的转动惯量
+        - iyy: 绕Y轴的转动惯量  
+        - izz: 绕Z轴的转动惯量
+        - ixy, ixz, iyz: 惯量积（通常为0）
+      -->
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.022"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 关节：连接base_link和第一层底盘 ==================== -->
+  <!-- 
+    joint标签: 定义两个连杆之间的连接关系
+    name属性: 关节名称，必须是唯一的
+    type属性: 关节类型
+      - fixed: 固定连接，无相对运动
+      - revolute: 旋转关节（绕单轴旋转）
+      - continuous: 连续旋转关节（无角度限制）
+      - prismatic: 平移关节（沿单轴移动）
+      - floating: 浮动关节（6自由度）
+      - planar: 平面关节（2平移+1旋转）
+  -->
+  <joint name="joint_base_chassis1" type="fixed">
+    <!-- 
+      parent标签: 父连杆，参考坐标系
+      child标签: 子连杆，相对parent移动
+    -->
+    <parent link="base_link"/>
+    <child link="chassis_link_1"/>
+    
+    <!-- 
+      origin标签: 定义子连杆相对父连杆的位姿
+      xyz属性: 位置偏移（米）
+        - "0 0 0.055": 表示chassis_link_1在base_link正上方5.5厘米处
+    -->
+    <origin xyz="0 0 0.055"/>
+    
+    <!-- 
+      固定关节没有axis标签
+      如果是可动关节，需要添加axis标签定义转动/移动轴
+    -->
+  </joint>
+
+  <!-- ==================== 第二层底盘 (上层结构) ==================== -->
+  <!-- 
+    功能: 承载上层传感器（激光雷达、摄像头）
+    尺寸: 与第一层底盘相同
+    特点: 质量很小，主要作为传感器安装平台
+  -->
+  <link name="chassis_link_2">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.20 0.143 0.0078"/>
+      </geometry>
+      <!-- 
+        引用已定义的材质"gray"
+        避免重复定义相同的颜色
+      -->
+      <material name="gray"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.20 0.143 0.0078"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- 
+        第二层底盘质量很小（1克）
+        因为主要安装轻量传感器
+      -->
+      <mass value="0.001"/>
+      <!-- 
+        转动惯量设置为很小的值
+        避免影响机器人整体稳定性
+      -->
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 材质定义（颜色库） ==================== -->
+  <!-- 
+    功能: 定义可重用的视觉颜色
+    用法: 在visual标签的material中引用name属性
+  -->
+  <!-- 铜色（用于支撑柱） -->
+  <material name="copper">
+    <color rgba="0.72 0.45 0.20 1.0"/>
+  </material>
+  <!-- 电池红色 -->
+  <material name="battery_red">
+    <color rgba="0.8 0.1 0.1 1.0"/>
+  </material>
+  <!-- 树莓派蓝色 -->
+  <material name="raspberry_blue">
+    <color rgba="0.1 0.1 0.8 1.0"/>
+  </material>
+  <!-- 电机黑色 -->
+  <material name="motor_black">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <!-- 变压器绿色 -->
+  <material name="transformer_green">
+    <color rgba="0.1 0.6 0.1 1.0"/>
+  </material>
+  <!-- STM32蓝色 -->
+  <material name="stm32_blue">
+    <color rgba="0.0 0.3 0.6 1.0"/>
+  </material>
+  <!-- 深灰色（用于轮子） -->
+  <material name="dark_gray">
+    <color rgba="0.3 0.3 0.3 1"/>
+  </material>
+  <!-- 激光雷达紫色 -->
+  <material name="lidar_purple">
+    <color rgba="0.6 0.2 0.8 1.0"/>
+  </material>
+  <!-- 支撑柱灰色 -->
+  <material name="support_gray">
+    <color rgba="0.6 0.6 0.6 1.0"/>
+  </material>
+  <!-- 摄像头橙色 -->
+  <material name="camera_orange">
+    <color rgba="1.0 0.5 0.0 1.0"/>
+  </material>
+
+  <!-- ==================== 电池模块 ==================== -->
+  <!-- 
+    功能: 模拟电池组
+    尺寸: 34mm × 105mm × 20mm
+    位置: 第一层底盘上表面靠前位置
+  -->
+  <link name="battery_link">
+    <visual>
+      <!-- 
+        xyz="0.08 0 0.01": 在底盘坐标系中的位置
+          - 0.08: 向前8厘米（正X方向）
+          - 0: 左右居中（Y方向为0）
+          - 0.01: 向上1厘米（在底盘上表面上）
+      -->
+      <origin rpy="0 0 0" xyz="0.08 0 0.01"/>
+      <geometry>
+        <box size="0.034 0.105 0.02"/>
+      </geometry>
+      <material name="battery_red"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.08 0 0.01"/>
+      <geometry>
+        <box size="0.034 0.105 0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- 质量设为1克（实际电池较重，这里简化） -->
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 树莓派模块 ==================== -->
+  <!-- 
+    功能: 模拟树莓派单板计算机
+    尺寸: 64mm × 90mm × 30mm
+    位置: 第一层底盘上表面靠前位置，电池旁边
+  -->
+  <link name="raspberry_pi_link">
+    <visual>
+      <!-- xyz="0.03 0 0.015": 在电池左侧，略高于底盘 -->
+      <origin rpy="0 0 0" xyz="0.03 0 0.015"/>
+      <geometry>
+        <box size="0.064 0.09 0.03"/>
+      </geometry>
+      <material name="raspberry_blue"/>
+    </visual>
+    <collision>
+      <!-- 
+        注意: 碰撞检测位置与视觉位置略有不同
+        这是为了优化碰撞检测或修正建模误差
+      -->
+      <origin rpy="0 0 0" xyz="0.04 0 0.015"/>
+      <geometry>
+        <box size="0.064 0.09 0.03"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 变压器模块 ==================== -->
+  <!-- 
+    功能: 模拟电源变压器
+    尺寸: 75mm × 50mm × 15mm（旋转90度后）
+    位置: 第一层底盘后部
+  -->
+  <link name="transformer_link">
+    <visual>
+      <!-- 
+        rpy="0 0 1.5708": 绕Z轴旋转90度（π/2 ≈ 1.5708弧度）
+        使长方体在XY平面内旋转
+      -->
+      <origin rpy="0 0 1.5708" xyz="0 0 0.0075"/>
+      <geometry>
+        <!-- 
+          注意: 由于旋转了90度，实际方向为:
+          - X方向: 0.075米（原Y方向）
+          - Y方向: 0.05米（原X方向）
+          - Z方向: 0.015米（高度）
+        -->
+        <box size="0.075 0.05 0.015"/>
+      </geometry>
+      <material name="transformer_green"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 1.5708" xyz="0 0 0.0075"/>
+      <geometry>
+        <box size="0.075 0.05 0.015"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== STM32控制板 ==================== -->
+  <!-- 
+    功能: 模拟STM32微控制器
+    尺寸: 56mm × 67mm × 5mm
+    位置: 安装在后方支撑柱上
+  -->
+  <link name="stm32_link">
+    <visual>
+      <!-- xyz="0 0.002 0": 轻微Y方向偏移（2毫米） -->
+      <origin rpy="0 0 0" xyz="0 0.002 0"/>
+      <geometry>
+        <box size="0.056 0.067 0.005"/>
+      </geometry>
+      <material name="stm32_blue"/>
+    </visual>
+    <collision>
+      <!-- 碰撞检测位置与视觉位置不同 -->
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.056 0.067 0.005"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（变压器后右柱） ==================== -->
+  <!-- 
+    功能: 支撑第二层底盘
+    形状: 圆柱体
+    尺寸: 长度10mm，半径3mm
+  -->
+  <link name="transformer_rear_right_pillar">
+    <visual>
+      <!-- 
+        xyz="0 0 0.005": 圆柱体中心位于高度5mm处
+        圆柱体实际从z=0延伸到z=0.01
+      -->
+      <origin rpy="0 0 0" xyz="0 0 0.005"/>
+      <geometry>
+        <!-- 
+          cylinder标签: 圆柱体
+          length属性: 圆柱体长度（高度方向）
+          radius属性: 圆柱体半径
+        -->
+        <cylinder length="0.01" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.005"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（变压器后左柱） ==================== -->
+  <link name="transformer_rear_left_pillar">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.005"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.005"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（变压器后右高柱） ==================== -->
+  <link name="transformer_back_right_pillar">
+    <visual>
+      <!-- xyz="0 0 0.0175": 圆柱体中心位于高度17.5mm处，长度35mm -->
+      <origin rpy="0 0 0" xyz="0 0 0.0175"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.0175"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（变压器后左高柱） ==================== -->
+  <link name="transformer_back_left_pillar">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.0175"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.0175"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（前右柱） ==================== -->
+  <link name="front_right_pillar">
+    <visual>
+      <!-- xyz="0 0 0.03196": 圆柱体中心位于高度31.96mm处，长度63.92mm -->
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（前左柱） ==================== -->
+  <link name="front_left_pillar">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（后右柱） ==================== -->
+  <link name="rear_right_pillar">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 支撑柱（后左柱） ==================== -->
+  <link name="rear_left_pillar">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+      <material name="copper"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.03196"/>
+      <geometry>
+        <cylinder length="0.06392" radius="0.003"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 关节：安装电子设备到第一层底盘 ==================== -->
+  
+  <!-- 关节：电池安装到第一层底盘 -->
+  <joint name="joint_chassis1_battery" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="battery_link"/>
+    <!-- 
+      xyz="0 0 0.0039": 安装位置
+        - 前两个0: 使用电池自身的原点位置（已在battery_link中定义）
+        - 0.0039: 向上偏移3.9毫米，确保在底盘上表面
+    -->
+    <origin xyz="0 0 0.0039"/>
+  </joint>
+
+  <!-- 关节：树莓派安装到第一层底盘 -->
+  <joint name="joint_chassis1_raspberry" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="raspberry_pi_link"/>
+    <origin xyz="0 0 0.0039"/>
+  </joint>
+
+  <!-- 关节：变压器安装到第一层底盘 -->
+  <joint name="joint_chassis1_transformer" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="transformer_link"/>
+    <!-- 
+      xyz="-0.055 0 0.0105": 安装位置
+        - -0.055: 向后5.5厘米（负X方向）
+        - 0: 左右居中
+        - 0.0105: 向上1.05厘米
+    -->
+    <origin xyz="-0.055 0 0.0105"/>
+  </joint>
+
+  <!-- 关节：变压器后右支撑柱安装 -->
+  <joint name="joint_chassis1_transformer_rear_right_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="transformer_rear_right_pillar"/>
+    <!-- 
+      xyz="-0.075 0.0325 0.0039": 安装位置
+        - -0.075: 向后7.5厘米
+        - 0.0325: 向右3.25厘米
+        - 0.0039: 向上3.9毫米（与底盘上表面接触）
+    -->
+    <origin xyz="-0.075 0.0325 0.0039"/>
+  </joint>
+
+  <!-- 关节：变压器后左支撑柱安装 -->
+  <joint name="joint_chassis1_transformer_rear_left_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="transformer_rear_left_pillar"/>
+    <!-- 
+      xyz="-0.075 -0.0325 0.0039": 安装位置
+        - -0.075: 向后7.5厘米
+        - -0.0325: 向左3.25厘米
+        - 0.0039: 向上3.9毫米
+    -->
+    <origin xyz="-0.075 -0.0325 0.0039"/>
+  </joint>
+
+  <!-- 关节：变压器后右高支撑柱安装 -->
+  <joint name="joint_chassis1_transformer_back_right_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="transformer_back_right_pillar"/>
+    <!-- 
+      xyz="-0.09 0.03 0.0039": 安装位置
+        - -0.09: 向后9厘米
+        - 0.03: 向右3厘米
+        - 0.0039: 向上3.9毫米
+    -->
+    <origin xyz="-0.09 0.03 0.0039"/>
+  </joint>
+
+  <!-- 关节：变压器后左高支撑柱安装 -->
+  <joint name="joint_chassis1_transformer_back_left_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="transformer_back_left_pillar"/>
+    <!-- 
+      xyz="-0.09 -0.03 0.0039": 安装位置
+        - -0.09: 向后9厘米
+        - -0.03: 向左3厘米
+        - 0.0039: 向上3.9毫米
+    -->
+    <origin xyz="-0.09 -0.03 0.0039"/>
+  </joint>
+
+  <!-- 关节：STM32板安装到变压器后右支撑柱 -->
+  <joint name="joint_pillars_stm32" type="fixed">
+    <parent link="transformer_back_right_pillar"/>
+    <child link="stm32_link"/>
+    <!-- 
+      xyz="0.025 -0.0325 0.0375": 相对位置
+        - 0.025: 沿支撑柱X方向偏移2.5厘米
+        - -0.0325: 沿支撑柱Y方向偏移-3.25厘米（向左）
+        - 0.0375: 沿支撑柱Z方向偏移3.75厘米（向上）
+    -->
+    <origin xyz="0.025 -0.0325 0.0375"/>
+  </joint>
+
+  <!-- 关节：前右支撑柱安装 -->
+  <joint name="joint_chassis1_front_right_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="front_right_pillar"/>
+    <!-- 
+      xyz="0.085 0.0615 0.0039": 安装位置
+        - 0.085: 向前8.5厘米
+        - 0.0615: 向右6.15厘米
+        - 0.0039: 向上3.9毫米
+      这是四个角柱之一，支撑第二层底盘
+    -->
+    <origin xyz="0.085 0.0615 0.0039"/>
+  </joint>
+
+  <!-- 关节：前左支撑柱安装 -->
+  <joint name="joint_chassis1_front_left_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="front_left_pillar"/>
+    <!-- 
+      xyz="0.085 -0.0615 0.0039": 安装位置
+        - 0.085: 向前8.5厘米
+        - -0.0615: 向左6.15厘米
+        - 0.0039: 向上3.9毫米
+    -->
+    <origin xyz="0.085 -0.0615 0.0039"/>
+  </joint>
+
+  <!-- 关节：后右支撑柱安装 -->
+  <joint name="joint_chassis1_rear_right_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="rear_right_pillar"/>
+    <!-- 
+      xyz="-0.085 0.0615 0.0039": 安装位置
+        - -0.085: 向后8.5厘米
+        - 0.0615: 向右6.15厘米
+        - 0.0039: 向上3.9毫米
+    -->
+    <origin xyz="-0.085 0.0615 0.0039"/>
+  </joint>
+
+  <!-- 关节：后左支撑柱安装 -->
+  <joint name="joint_chassis1_rear_left_pillar" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="rear_left_pillar"/>
+    <!-- 
+      xyz="-0.085 -0.0615 0.0039": 安装位置
+        - -0.085: 向后8.5厘米
+        - -0.0615: 向左6.15厘米
+        - 0.0039: 向上3.9毫米
+    -->
+    <origin xyz="-0.085 -0.0615 0.0039"/>
+  </joint>
+
+  <!-- 关节：第二层底盘安装到第一层底盘（通过支撑柱） -->
+  <joint name="joint_chassis1_chassis2" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="chassis_link_2"/>
+    <!-- 
+      xyz="0 0 0.0645": 安装位置
+        - 前两个0: XY方向与第一层底盘对齐
+        - 0.0645: 向上6.45厘米，由支撑柱高度决定
+    -->
+    <origin xyz="0 0 0.0645"/>
+  </joint>
+
+  <!-- ==================== 传感器组件 ==================== -->
+  
+  <!-- 激光雷达 -->
+  <link name="lidar_link">
+    <visual>
+      <!-- xyz="0 0 0.015": 圆柱体中心位于高度1.5厘米处 -->
+      <origin rpy="0 0 0" xyz="0 0 0.015"/>
+      <geometry>
+        <!-- 
+          尺寸: 高度40mm，半径45mm
+          模拟常见的2D激光雷达（如RPLIDAR）
+        -->
+        <cylinder length="0.04" radius="0.045"/>
+      </geometry>
+      <material name="lidar_purple"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.015"/>
+      <geometry>
+        <cylinder length="0.04" radius="0.045"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 激光雷达支撑柱 -->
+  <link name="lidar_support_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.025"/>
+      <geometry>
+        <cylinder length="0.05" radius="0.008"/>
+      </geometry>
+      <material name="support_gray"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.025"/>
+      <geometry>
+        <cylinder length="0.05" radius="0.008"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 关节：激光雷达支撑柱安装到第二层底盘 -->
+  <joint name="joint_chassis2_lidar_support" type="fixed">
+    <parent link="chassis_link_2"/>
+    <child link="lidar_support_link"/>
+    <!-- 
+      xyz="-0.055 0 0.0039": 安装位置
+        - -0.055: 向后5.5厘米
+        - 0: 左右居中
+        - 0.0039: 向上3.9毫米（与第二层底盘上表面接触）
+    -->
+    <origin xyz="-0.055 0 0.0039"/>
+  </joint>
+
+  <!-- 关节：激光雷达安装到支撑柱 -->
+  <joint name="joint_support_lidar" type="fixed">
+    <parent link="lidar_support_link"/>
+    <child link="lidar_link"/>
+    <!-- 
+      xyz="0 0 0.045": 安装位置
+        - 前两个0: XY方向与支撑柱中心对齐
+        - 0.045: 向上4.5厘米，将激光雷达抬高到合适高度
+    -->
+    <origin xyz="0 0 0.045"/>
+  </joint>
+
+  <!-- 深度相机 -->
+  <link name="depth_camera_link">
+    <visual>
+      <!-- xyz="0 0 0.01255": 长方体中心位于高度1.255厘米处 -->
+      <origin rpy="0 0 0" xyz="0 0 0.01255"/>
+      <geometry>
+        <!-- 
+          尺寸: 25mm × 89.82mm × 25.1mm
+          模拟Intel RealSense等深度相机
+        -->
+        <box size="0.025 0.08982 0.0251"/>
+      </geometry>
+      <material name="camera_orange"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.01255"/>
+      <geometry>
+        <box size="0.025 0.08982 0.0251"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 关节：深度相机安装到第二层底盘 -->
+  <joint name="joint_chassis2_depth_camera" type="fixed">
+    <parent link="chassis_link_2"/>
+    <child link="depth_camera_link"/>
+    <!-- 
+      xyz="0.08 0 0.003": 安装位置
+        - 0.08: 向前8厘米
+        - 0: 左右居中
+        - 0.003: 向上3毫米，略高于底盘表面
+    -->
+    <origin xyz="0.08 0 0.003"/>
+  </joint>
+
+  <!-- ==================== 电机与轮子组件 ==================== -->
+  
+  <!-- 右前电机 -->
+  <link name="front_right_motor_link">
+    <visual>
+      <!-- 
+        rpy="1.5708 0 0": 绕X轴旋转90度
+        使圆柱体的轴线沿Y轴方向（车轮转动轴方向）
+      -->
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <!-- 
+          尺寸: 长度44mm（沿Y轴），半径13mm
+          模拟直流减速电机
+        -->
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 左前电机 -->
+  <link name="front_left_motor_link">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 右后电机 -->
+  <link name="rear_right_motor_link">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 左后电机 -->
+  <link name="rear_left_motor_link">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.044" radius="0.013"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <!-- 关节：右前电机安装到第一层底盘 -->
+  <joint name="joint_chassis1_front_right_motor" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="front_right_motor_link"/>
+    <!-- 
+      xyz="0.0525 -0.0485 -0.0375": 安装位置
+        - 0.0525: 向前5.25厘米
+        - -0.0485: 向左4.85厘米（负Y方向为右前轮位置）
+        - -0.0375: 向下3.75厘米（位于底盘下方）
+    -->
+    <origin xyz="0.0525 -0.0485 -0.0375"/>
+  </joint>
+
+  <!-- 关节：左前电机安装到第一层底盘 -->
+  <joint name="joint_chassis1_front_left_motor" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="front_left_motor_link"/>
+    <!-- 
+      xyz="0.0525 0.0485 -0.0375": 安装位置
+        - 0.0525: 向前5.25厘米
+        - 0.0485: 向右4.85厘米（正Y方向为左前轮位置）
+        - -0.0375: 向下3.75厘米
+    -->
+    <origin xyz="0.0525 0.0485 -0.0375"/>
+  </joint>
+  
+  <!-- 关节：右后电机安装到第一层底盘 -->
+  <joint name="joint_chassis1_rear_right_motor" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="rear_right_motor_link"/>
+    <!-- 
+      xyz="-0.0525 -0.0485 -0.0375": 安装位置
+        - -0.0525: 向后5.25厘米
+        - -0.0485: 向左4.85厘米（负Y方向为右后轮位置）
+        - -0.0375: 向下3.75厘米
+    -->
+    <origin xyz="-0.0525 -0.0485 -0.0375"/>
+  </joint>
+
+  <!-- 关节：左后电机安装到第一层底盘 -->
+  <joint name="joint_chassis1_rear_left_motor" type="fixed">
+    <parent link="chassis_link_1"/>
+    <child link="rear_left_motor_link"/>
+    <!-- 
+      xyz="-0.0525 0.0485 -0.0375": 安装位置
+        - -0.0525: 向后5.25厘米
+        - 0.0485: 向右4.85厘米（正Y方向为左后轮位置）
+        - -0.0375: 向下3.75厘米
+    -->
+    <origin xyz="-0.0525 0.0485 -0.0375"/>
+  </joint>
+
+  <!-- ==================== 轮子组件 ==================== -->
+  
+  <!-- 右前轮 -->
+  <link name="front-right-wheel-link">
+    <visual>
+      <!-- 
+        rpy="1.5708 0 0": 绕X轴旋转90度
+        使圆柱体的轴线沿Y轴方向（车轮转动轴方向）
+      -->
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <!-- 
+          尺寸: 长度20mm（轮宽），半径37.5mm（轮径）
+          模拟橡胶轮，直径75mm，宽度20mm
+        -->
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- 轮子质量较重（100克），影响转动惯量 -->
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <!-- 左前轮 -->
+  <link name="front-left-wheel-link">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <!-- 右后轮 -->
+  <link name="rear-right-wheel-link">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <!-- 左后轮 -->
+  <link name="rear-left-wheel-link">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.0375"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== 轮子关节（可转动） ==================== -->
+  
+  <!-- 关节：右前轮连接到右前电机 -->
+  <joint name="joint_front_right_wheel" type="continuous">
+    <!-- 
+      type="continuous": 连续旋转关节
+      可以无限旋转，没有角度限制
+      适合模拟车轮
+    -->
+    <parent link="front_right_motor_link"/>
+    <child link="front-right-wheel-link"/>
+    <!-- 
+      位置偏移：车轮安装在电机外侧
+      xyz="0 -0.032 0":
+        - 0: X方向无偏移
+        - -0.032: Y方向偏移-32mm（向右，因为电机轴线沿Y轴）
+        - 0: Z方向无偏移
+    -->
+    <origin rpy="0 0 0" xyz="0 -0.032 0"/>
+    
+    <!-- 
+      axis标签: 定义转动轴
+      xyz属性: 轴的方向向量
+        - "0 1 0": 沿Y轴转动（符合电机安装方向）
+    -->
+    <axis xyz="0 1 0"/>
+    
+    <!-- 
+      dynamics标签: 定义关节动力学参数
+      damping属性: 阻尼系数（N·m·s/rad）
+        增加旋转阻力，模拟机械摩擦
+      friction属性: 静摩擦系数
+        通常设为0，由Gazebo接触属性控制
+    -->
+    <dynamics damping="0.014" friction="0.0"/>
+  </joint>
+
+  <!-- 关节：左前轮连接到左前电机 -->
+  <joint name="joint_front_left_wheel" type="continuous">
+    <parent link="front_left_motor_link"/>
+    <child link="front-left-wheel-link"/>
+    <!-- 
+      xyz="0 0.032 0": 
+        - 0.032: Y方向偏移32mm（向左，因为电机轴线沿Y轴）
+        注意方向与右轮相反
+    -->
+    <origin rpy="0 0 0" xyz="0 0.032 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.014" friction="0.0"/>
+  </joint>
+
+  <!-- 关节：右后轮连接到右后电机 -->
+  <joint name="joint_rear_right_wheel" type="continuous">
+    <parent link="rear_right_motor_link"/>
+    <child link="rear-right-wheel-link"/>
+    <!-- 
+      xyz="0 -0.032 0":
+        - -0.032: Y方向偏移-32mm（向右）
+    -->
+    <origin rpy="0 0 0" xyz="0 -0.032 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.014" friction="0.0"/>
+  </joint>
+
+  <!-- 关节：左后轮连接到左后电机 -->
+  <joint name="joint_rear_left_wheel" type="continuous">
+    <parent link="rear_left_motor_link"/>
+    <child link="rear-left-wheel-link"/>
+    <!-- 
+      xyz="0 0.032 0":
+        - 0.032: Y方向偏移32mm（向左）
+    -->
+    <origin rpy="0 0 0" xyz="0 0.032 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.014" friction="0.0"/>
+  </joint>
+
+  <!-- ==================== Gazebo扩展属性 ==================== -->
+  <!-- 
+    gazebo标签: Gazebo仿真器特有的扩展属性
+    不在标准URDF中，但被Gazebo识别
+  -->
+  
+  <!-- 第一层底盘的Gazebo材质 -->
+  <gazebo reference="chassis_link_1">
+    <!-- 
+      material标签: Gazebo内置材质
+      覆盖URDF中的视觉材质，用于Gazebo渲染
+    -->
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+
+  <!-- 第二层底盘的Gazebo材质 -->
+  <gazebo reference="chassis_link_2">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  
+  <!-- 电池的Gazebo材质 -->
+  <gazebo reference="battery_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+  
+  <!-- 树莓派的Gazebo材质 -->
+  <gazebo reference="raspberry_pi_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  
+  <!-- STM32的Gazebo材质 -->
+  <gazebo reference="stm32_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  
+  <!-- 变压器的Gazebo材质 -->
+  <gazebo reference="transformer_link">
+    <material>Gazebo/Green</material>
+  </gazebo>
+  
+  <!-- 支撑柱的Gazebo材质 -->
+  <gazebo reference="transformer_rear_right_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="transformer_rear_left_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="transformer_back_right_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="transformer_back_left_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="front_right_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="front_left_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="rear_right_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+  
+  <gazebo reference="rear_left_pillar">
+    <material>Gazebo/Gold</material>
+  </gazebo>
+
+  <!-- 电机的Gazebo材质 -->
+  <gazebo reference="front_right_motor_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  
+  <gazebo reference="front_left_motor_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  
+  <gazebo reference="rear_right_motor_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  
+  <gazebo reference="rear_left_motor_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  
+  <!-- 激光雷达的Gazebo材质 -->
+  <gazebo reference="lidar_link">
+    <material>Gazebo/Purple</material>
+  </gazebo>
+  
+  <!-- 激光雷达支撑柱的Gazebo材质 -->
+  <gazebo reference="lidar_support_link">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+  
+  <!-- 深度相机的Gazebo材质 -->
+  <gazebo reference="depth_camera_link">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <!-- 右前轮的Gazebo物理属性 -->
+  <gazebo reference="front-right-wheel-link">
+    <material>Gazebo/DarkGrey</material>
+    <!-- 
+      mu1: 主方向摩擦系数（滚动方向），值越大摩擦力越大
+      mu2: 副方向摩擦系数（侧向），值越大侧向摩擦力越大
+      fdir1: 主摩擦方向向量，定义滚动方向
+      kp: 接触刚度（N/m），值越大接触越硬
+      kd: 接触阻尼（N·s/m），值越大阻尼越大
+      minDepth: 最小穿透深度（接触容差），防止过深穿透
+      maxVel: 最大接触速度（m/s），限制接触计算速度
+      slip1, slip2: 滑动参数，模拟轮胎打滑
+    -->
+    <mu1>1.0</mu1>
+    <mu2>0.5</mu2>
+    <fdir1>1 0 0</fdir1>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>10.0</maxVel>
+    <slip1>0.0</slip1>
+    <slip2>0.0</slip2>
+  </gazebo>
+
+  <!-- 左前轮的Gazebo物理属性 -->
+  <gazebo reference="front-left-wheel-link">
+    <material>Gazebo/DarkGrey</material>
+    <mu1>1.0</mu1>
+    <mu2>0.5</mu2>
+    <fdir1>1 0 0</fdir1>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>10.0</maxVel>
+    <slip1>0.0</slip1>
+    <slip2>0.0</slip2>
+  </gazebo>
+
+  <!-- 右后轮的Gazebo物理属性 -->
+  <gazebo reference="rear-right-wheel-link">
+    <material>Gazebo/DarkGrey</material>
+    <mu1>1.0</mu1>
+    <mu2>0.5</mu2>
+    <fdir1>1 0 0</fdir1>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>10.0</maxVel>
+    <slip1>0.0</slip1>
+    <slip2>0.0</slip2>
+  </gazebo>
+
+  <!-- 左后轮的Gazebo物理属性 -->
+  <gazebo reference="rear-left-wheel-link">
+    <material>Gazebo/DarkGrey</material>
+    <mu1>1.0</mu1>
+    <mu2>0.5</mu2>
+    <fdir1>1 0 0</fdir1>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>10.0</maxVel>
+    <slip1>0.0</slip1>
+    <slip2>0.0</slip2>
+  </gazebo>
+
+  <!-- ==================== 传感器插件 ==================== -->
+  
+  <!-- 激光雷达传感器插件 -->
+  <gazebo reference="lidar_link">
+    <sensor type="ray" name="rplidar_sensor">
+      <!-- 传感器相对于连杆的位姿 -->
+      <pose>0 0 0.02 0 0 0</pose>
+      <!-- 是否在Gazebo中可视化激光束 -->
+      <visualize>false</visualize>
+      <!-- 更新频率（Hz） -->
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <!-- 扫描线数量（360度一圈），值越大分辨率越高 -->
+            <samples>360</samples>
+            <!-- 角度分辨率（通常为1），每个样本的角度间隔 -->
+            <resolution>1</resolution>
+            <!-- 扫描角度范围（-π到π，全覆盖），弧度制 -->
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <!-- 测距范围（米） -->
+        <range>
+          <!-- 最小测距距离，小于此值的物体不被检测 -->
+          <min>0.15</min>
+          <!-- 最大测距距离，大于此值的物体不被检测 -->
+          <max>12.0</max>
+          <!-- 距离分辨率，值越小精度越高 -->
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <!-- ROS插件：发布激光扫描数据 -->
+      <plugin name="rplidar_controller" filename="libgazebo_ros_laser.so">
+        <!-- ROS话题名称，用于发布激光扫描数据 -->
+        <topicName>/scan</topicName>
+        <!-- 坐标系名称，激光数据参考的坐标系 -->
+        <frameName>lidar_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 深度相机传感器插件 -->
+  <gazebo reference="depth_camera_link">
+    <sensor type="depth" name="depth_camera">
+      <!-- 传感器相对于连杆的位姿 -->
+      <pose>0 0 0.01255 0 0 0</pose>
+      <camera>
+        <!-- 水平视场角（60度，弧度制） -->
+        <horizontal_fov>1.047</horizontal_fov>
+        <image>
+          <!-- 图像分辨率，宽度和高度像素 -->
+          <width>640</width>
+          <height>480</height>
+          <!-- 图像格式：R8G8B8表示RGB颜色格式 -->
+          <format>R8G8B8</format>
+        </image>
+        <!-- 裁剪平面（只渲染此范围内的物体） -->
+        <clip>
+          <!-- 近裁剪平面，小于此距离的物体不被渲染 -->
+          <near>0.1</near>
+          <!-- 远裁剪平面，大于此距离的物体不被渲染 -->
+          <far>10.0</far>
+        </clip>
+        <!-- 噪声模型，模拟传感器噪声 -->
+        <noise>
+          <!-- 噪声类型：高斯噪声 -->
+          <type>gaussian</type>
+          <!-- 噪声均值，通常为0 -->
+          <mean>0.0</mean>
+          <!-- 噪声标准差，值越大噪声越强 -->
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <!-- ROS插件：发布相机图像 -->
+      <plugin name="depth_camera_controller" filename="libgazebo_ros_camera.so">
+        <!-- 是否始终开启传感器 -->
+        <alwaysOn>true</alwaysOn>
+        <!-- 更新频率（Hz） -->
+        <updateRate>30.0</updateRate>
+        <!-- 相机名称，用于ROS命名空间 -->
+        <cameraName>depth_camera</cameraName>
+        <!-- 图像话题名称 -->
+        <imageTopicName>color/image_raw</imageTopicName>
+        <!-- 相机信息话题名称（内参、畸变参数等） -->
+        <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
+        <!-- 坐标系名称 -->
+        <frameName>depth_camera_link</frameName>
+        <!-- 基线长度（双目相机参数），用于深度计算 -->
+        <hackBaseline>0.07</hackBaseline>
+        <!-- 径向畸变参数k1 -->
+        <distortionK1>0.0</distortionK1>
+        <!-- 径向畸变参数k2 -->
+        <distortionK2>0.0</distortionK2>
+        <!-- 径向畸变参数k3 -->
+        <distortionK3>0.0</distortionK3>
+        <!-- 切向畸变参数t1 -->
+        <distortionT1>0.0</distortionT1>
+        <!-- 切向畸变参数t2 -->
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ==================== ROS Control插件 ==================== -->
+  <!-- 
+    功能: 启用ROS控制接口
+    允许通过ROS话题控制关节（如车轮速度）
+  -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <!-- ROS命名空间，用于话题和参数 -->
+      <robotNamespace>/</robotNamespace>
+      <!-- 控制周期（秒），控制循环的更新时间间隔 -->
+      <controlPeriod>0.001</controlPeriod>
+      <!-- 机器人硬件仿真类型，默认实现 -->
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <!-- 是否使用遗留命名空间模式 -->
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <!-- ==================== 传动系统配置 ==================== -->
+  <!-- 
+    transmission标签: 定义执行器（电机）与关节的连接关系
+    用于ROS Control系统
+  -->
+  
+  <!-- 左前轮传动 -->
+  <transmission name="front_left_transmission">
+    <!-- 传动类型：简单传动（1:1减速比） -->
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_front_left_wheel">
+      <!-- 
+        硬件接口类型：
+        - EffortJointInterface: 力矩控制
+        - VelocityJointInterface: 速度控制  
+        - PositionJointInterface: 位置控制
+      -->
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_left_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <!-- 减速比：1表示直接驱动，大于1表示减速 -->
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- 右前轮传动 -->
+  <transmission name="front_right_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_front_right_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_right_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- 左后轮传动 -->
+  <transmission name="rear_left_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_rear_left_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="rear_left_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- 右后轮传动 -->
+  <transmission name="rear_right_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_rear_right_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="rear_right_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- ==================== IMU传感器插件 ==================== -->
+  <!-- 
+    功能: 模拟惯性测量单元（IMU）
+    提供加速度、角速度和姿态信息
+  -->
+  <gazebo reference="stm32_link">
+    <!-- 是否受重力影响，true表示IMU能测量重力加速度 -->
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <!-- 是否始终开启传感器 -->
+      <always_on>true</always_on>
+      <!-- 更新频率（Hz） -->
+      <update_rate>100</update_rate>
+      <!-- 是否在Gazebo中可视化IMU坐标系 -->
+      <visualize>true</visualize>
+      <!-- 默认话题名称，将被插件覆盖 -->
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <!-- ROS话题名称，用于发布IMU数据 -->
+        <topicName>/ROS_Car/imu</topicName>
+        <!-- 参考连杆，IMU安装的连杆 -->
+        <bodyName>stm32_link</bodyName>
+        <!-- 更新频率（Hz） -->
+        <updateRateHZ>100.0</updateRateHZ>
+        <!-- 高斯噪声标准差，模拟传感器噪声 -->
+        <gaussianNoise>0.0</gaussianNoise>
+        <!-- 位置偏移（米），IMU相对于连杆原点的偏移 -->
+        <xyzOffset>0 0 0</xyzOffset>
+        <!-- 姿态偏移（弧度），IMU相对于连杆坐标系的旋转 -->
+        <rpyOffset>0 0 0</rpyOffset>
+        <!-- 坐标系名称，IMU数据参考的坐标系 -->
+        <frameName>stm32_link</frameName>
+        <!-- 是否将初始方向作为参考方向 -->
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <!-- 传感器相对于连杆的位姿 -->
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+</robot>

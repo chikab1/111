@@ -1,0 +1,24 @@
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+  
+  <param name="robot_description" 
+         command="$(find xacro)/xacro --inorder '$(find car_robot)/urdf/car-robot-xacro.urdf'" />
+  
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen"
+     args="-urdf -model car -param robot_description -z 0.05" />
+
+  <include file="$(find car_robot)/launch/car_control.launch"/>
+
+  <node name="pure_torque_controller" pkg="car_robot" type="pwm_controller.py" output="screen"/>
+
+  <node name="rpm_translator" pkg="car_robot" type="rpm_translator.py" output="screen"/>
+
+  <node name="ground_truth_odom" pkg="car_robot" type="ground_truth_odom.py" output="screen"/>
+
+</launch>

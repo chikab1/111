@@ -1,0 +1,13 @@
+<launch>
+  <!-- 加载控制器配置 -->
+  <rosparam file="$(find car_robot)/config/joint_controllers.yaml" command="load"/>
+
+  <!-- 启动控制器管理器 -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" 
+        respawn="false" output="screen"
+        args="joint_state_controller
+              front_left_effort_controller
+              front_right_effort_controller
+              rear_left_effort_controller
+              rear_right_effort_controller"/>
+</launch>

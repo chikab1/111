@@ -1,0 +1,21 @@
+# 关节状态控制器
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 100
+
+# 四个轮子的力矩控制器
+front_left_effort_controller:
+  type: effort_controllers/JointEffortController
+  joint: joint_front_left_wheel
+
+front_right_effort_controller:
+  type: effort_controllers/JointEffortController
+  joint: joint_front_right_wheel
+
+rear_left_effort_controller:
+  type: effort_controllers/JointEffortController
+  joint: joint_rear_left_wheel
+
+rear_right_effort_controller:
+  type: effort_controllers/JointEffortController
+  joint: joint_rear_right_wheel

@@ -1,0 +1,16 @@
+# PWM控制参数
+pwm_controller:
+  pwm_max: 255.0
+  torque_constant: 0.1
+  dead_zone: 10
+
+# 小车物理参数
+robot_params:
+  wheel_radius: 0.0375
+  track_width: 0.215
+  wheel_separation: 0.215
+
+# 数据收集参数
+data_collection:
+  history_length: 20
+  sample_rate: 50
