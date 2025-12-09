@@ -1,0 +1,2 @@
+4-wheel-differential-mobile-robot:four_wheel_diffbot:simple_car
+-DCATKIN_DEVEL_PREFIX=/home/hzy/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/hzy/catkin_ws/install -G Unix Makefiles

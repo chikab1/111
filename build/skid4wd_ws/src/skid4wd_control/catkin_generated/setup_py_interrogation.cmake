@@ -1,0 +1,7 @@
+set(skid4wd_control_SETUP_PY_SETUP_MODULE "distutils.core")
+set(skid4wd_control_SETUP_PY_VERSION "0.0.0")
+set(skid4wd_control_SETUP_PY_SCRIPTS "")
+set(skid4wd_control_SETUP_PY_PACKAGES "skid4wd_control")
+set(skid4wd_control_SETUP_PY_PACKAGE_DIRS "src/skid4wd_control")
+set(skid4wd_control_SETUP_PY_MODULES "")
+set(skid4wd_control_SETUP_PY_MODULE_DIRS "")

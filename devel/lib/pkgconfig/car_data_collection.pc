@@ -1,0 +1,8 @@
+prefix=/home/hzy/catkin_ws/devel
+
+Name: car_data_collection
+Description: Description of car_data_collection
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: controller_manager gazebo_ros geometry_msgs hardware_interface joint_state_controller roscpp rospy sensor_msgs std_msgs diff_drive_controller nav_msgs

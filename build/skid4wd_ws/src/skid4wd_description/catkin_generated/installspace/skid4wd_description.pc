@@ -1,0 +1,8 @@
+prefix=/home/hzy/catkin_ws/install
+
+Name: skid4wd_description
+Description: Description of skid4wd_description
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

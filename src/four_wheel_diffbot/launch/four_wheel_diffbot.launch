@@ -1,0 +1,19 @@
+<launch>
+  <arg name="model" default="$(find four_wheel_diffbot)/urdf/four_wheel_diffbot.urdf"/>
+
+  <!-- 把 URDF 文件加载到 ROS 参数服务器 -->
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <!-- 启动 Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+  </include>
+
+  <!-- 在 Gazebo 中生成机器人 -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+        args="-param robot_description -urdf -model four_wheel_diffbot"
+        output="screen"/>
+</launch>
+

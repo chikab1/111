@@ -1,0 +1,14 @@
+<launch>
+  <!-- 启动 Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+  </include>
+
+  <!-- 加载 URDF 模型到 Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="-urdf -model simple_car -file $(find simple_car)/urdf/two_layer_car.urdf -x 0 -y 0 -z 0.078"/>
+</launch>
+

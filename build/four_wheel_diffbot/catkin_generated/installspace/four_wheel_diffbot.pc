@@ -1,0 +1,8 @@
+prefix=/home/hzy/catkin_ws/install
+
+Name: four_wheel_diffbot
+Description: Description of four_wheel_diffbot
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

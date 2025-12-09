@@ -1,0 +1,8 @@
+prefix=/home/hzy/catkin_ws/devel
+
+Name: simple_car
+Description: Description of simple_car
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

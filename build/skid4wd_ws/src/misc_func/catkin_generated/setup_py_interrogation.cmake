@@ -1,0 +1,7 @@
+set(misc_func_SETUP_PY_SETUP_MODULE "distutils.core")
+set(misc_func_SETUP_PY_VERSION "0.0.0")
+set(misc_func_SETUP_PY_SCRIPTS "")
+set(misc_func_SETUP_PY_PACKAGES "misc_func")
+set(misc_func_SETUP_PY_PACKAGE_DIRS "src/misc_func")
+set(misc_func_SETUP_PY_MODULES "")
+set(misc_func_SETUP_PY_MODULE_DIRS "")

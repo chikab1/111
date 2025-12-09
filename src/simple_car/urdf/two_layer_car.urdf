@@ -1,0 +1,130 @@
+<robot name="two_layer_car">
+
+  <!-- 第一层底盘 -->
+  <link name="chassis_lower">
+    <visual>
+      <geometry>
+        <box size="0.20 0.146 0.05"/> <!-- 长20cm, 宽14.6cm, 厚5cm可调 -->
+      </geometry>
+      <material>
+        <color rgba="0.2 0.2 0.8 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.20 0.146 0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <!-- 第二层底盘 -->
+  <link name="chassis_upper">
+    <visual>
+      <geometry>
+        <box size="0.20 0.146 0.05"/>
+      </geometry>
+      <material>
+        <color rgba="0.2 0.8 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.20 0.146 0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.005" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+    </inertial>
+  </link>
+
+  <!-- 连接上下层 -->
+  <joint name="joint_upper_lower" type="fixed">
+    <parent link="chassis_lower"/>
+    <child link="chassis_upper"/>
+    <origin xyz="0 0 0.064" rpy="0 0 0"/> <!-- 第二层底面离第一层顶面约0.064m（14.2-7.8cm） -->
+  </joint>
+
+  <!-- 四个轮子 -->
+  <!-- 前左轮 -->
+  <link name="wheel_fl">
+    <visual>
+      <geometry>
+        <cylinder radius="0.0375" length="0.02"/> <!-- 半径7.5cm/2, 厚2cm -->
+      </geometry>
+      <material>
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="joint_fl" type="revolute">
+    <parent link="chassis_lower"/>
+    <child link="wheel_fl"/>
+    <origin xyz="0.015 0.073 -0.0375" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="10"/>
+  </joint>
+
+  <!-- 前右轮 -->
+  <link name="wheel_fr">
+    <visual>
+      <geometry>
+        <cylinder radius="0.0375" length="0.02"/>
+      </geometry>
+      <material>
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="joint_fr" type="revolute">
+    <parent link="chassis_lower"/>
+    <child link="wheel_fr"/>
+    <origin xyz="0.015 -0.073 -0.0375" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="10"/>
+  </joint>
+
+  <!-- 后左轮 -->
+  <link name="wheel_rl">
+    <visual>
+      <geometry>
+        <cylinder radius="0.0375" length="0.02"/>
+      </geometry>
+      <material>
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="joint_rl" type="revolute">
+    <parent link="chassis_lower"/>
+    <child link="wheel_rl"/>
+    <origin xyz="-0.015 0.073 -0.0375" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="10"/>
+  </joint>
+
+  <!-- 后右轮 -->
+  <link name="wheel_rr">
+    <visual>
+      <geometry>
+        <cylinder radius="0.0375" length="0.02"/>
+      </geometry>
+      <material>
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="joint_rr" type="revolute">
+    <parent link="chassis_lower"/>
+    <child link="wheel_rr"/>
+    <origin xyz="-0.015 -0.073 -0.0375" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="10"/>
+  </joint>
+
+</robot>
+
